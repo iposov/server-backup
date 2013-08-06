@@ -41,27 +41,6 @@ def get_branch_change(branch_name):
         
     return tag_changeset, branch_changeset
 
-#def get_full_path(server, path):
-#    if server == '$local':
-#        return path
-#    elif server == '$repo':
-#        if path.startswith('/'):
-#            path = path[1:]
-#        return os.path.normpath(os.path.join(repo_folder, path))
-#    else:
-#        if not path.startswith('/'):
-#            path = '/' + path
-#        return '{0}@{1}:{2}'.format(server['user'], server['host'], path)
-#
-#def move_folder(local_path_from, local_path_to):
-#    _, _, code = command('mv "{0}" "{1}"'.format(local_path_from, local_path_to))
-#    if code:
-#        hookprint('Failed to copy repository')
-#        sys.exit(1)
-#
-#def move_ssh(local_path_src, server, dest_path):
-#    print 'copy ssh', local_path_src, server, dest_path
-
 def do_sync(changeset_from, changeset_to, location_src, location_dst):
     #TODO use the two changesets to determine files that need to be deleted on the remote host
     rsync_command = 'rsync -az --exclude=.hg {0}/ {1}'.format(location_src, location_dst)
@@ -104,20 +83,6 @@ def update_repo(changeset):
     if code:
         hookprint('Failed to update repository to revision {0}'.format(changeset))
         sys.exit(1)
-
-#def archive_repo(changeset):
-#    temp_folder = os.path.join(gettempdir(), 'deployment')
-#    ensure_dir(temp_folder)
-#    temp_repo_folder = os.path.join(temp_folder, repo_id)
-#    ensure_dir(temp_repo_folder)
-#    _, _, code = command('rm -rf {0}'.format(temp_repo_folder))
-#    if code:
-#        hookprint('Failed to remove folder "{0}"'.format(temp_repo_folder))
-#        sys.exit(1)
-#    _, _, code = command('hg archive -r {0} -t files "{1}"'.format(changeset, temp_repo_folder))
-#    if code:
-#        hookprint('Failed to archive a repository')
-#        sys.exit(1)
 
 #load config and search for actions
 
