@@ -4,24 +4,29 @@ import os
 import sys
 from subprocess import Popen, PIPE
 
+
 def hookprint(msg):
     msg = 'deploy: ' + msg
     print >> sys.stderr, msg
 
-def command(cmd, input=None):
-    child = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
-    out, err = child.communicate(input)
+
+def command(cmd, inp=None, wd=None):
+    child = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE, cwd=wd)
+    out, err = child.communicate(inp)
     return out, err, child.returncode
-    
+
+
 def last_deploy_tag_name(branch_name):
     return branch_name + '-last-deploy'
-    
+
+
 def get_changeset_from_log(log):
     log = log.partition('\n')[0]
     log = log[len('changeset:') :]
     log = log.strip()
     log = log.partition(':')
     return log[0]
+
 
 def get_branch_change(branch_name):
     tag = last_deploy_tag_name(branch_name)
@@ -41,42 +46,52 @@ def get_branch_change(branch_name):
         
     return tag_changeset, branch_changeset
 
-def do_sync(changeset_from, changeset_to, location_src, location_dst):
+
+def do_sync(changeset_from, changeset_to, location_src, location_dst, need_delete):
     #TODO use the two changesets to determine files that need to be deleted on the remote host
-    rsync_command = 'rsync -az --exclude=.hg {0}/ {1}'.format(location_src, location_dst)
+    if need_delete:
+        delete_arg = '--delete '
+    else:
+        delete_ard = ''
+
+    rsync_command = 'rsync -az {0}--exclude=.hg {1}/ {2}'.format(location_src, location_dst)
     _, err, code = command(rsync_command)
     if code:
         hookprint('Failed to sync {0} and {1}'.format(location_src, location_dst))
         hookprint('STD ERR: {0}'.format(err))
         sys.exit(1)
 
-def do_command(changeset_from, changeset_to, server, cmd):
+
+def do_command(changeset_from, changeset_to, server, cmd, wd):
     hookprint('ACTION executing command {0} on {1}'.format(cmd, server))
 
     if server != '$local':
         #TODO properly escape a command
         cmd = 'ssh {0} "{1}"'.format(server, cmd)
 
-    out, err, code = command(cmd)
+    out, err, code = command(cmd, wd=wd)
     hookprint('exit code {0}'.format(code))
     if out:
         hookprint('STD OUT: {0}'.format(out))
     if err:
         hookprint('STD ERR: {0}'.format(err))
 
+
 def do_actions(changeset_from, changeset_to, actions):
     for action in actions:
         if 'sync' in action:
-            do_sync(changeset_from, changeset_to, action['source'], action['dest'])
+            do_sync(changeset_from, changeset_to, action['source'], action['dest'], action.get('delete', False))
         elif 'command' in action:
-            do_command(changeset_from, changeset_to, action.get('where', '$local'), action['command'])
+            do_command(changeset_from, changeset_to, action.get('where', '$local'), action['command'], action.get('wd', False))
         else:
             hookprint('Unknown action "{0}"'.format(action))
             sys.exit(1)
 
+
 def ensure_dir(d):
     if not os.path.exists(d):
         os.makedirs(d)
+
 
 def update_repo(changeset):
     _, _, code = command('hg update -r {0} --clean'.format(changeset))
@@ -84,9 +99,9 @@ def update_repo(changeset):
         hookprint('Failed to update repository to revision {0}'.format(changeset))
         sys.exit(1)
 
-#load config and search for actions
 
-def do_deploy(repo_folder = False, repo_branch = False):
+def do_deploy(repo_folder=False, repo_branch=False):
+    #load config and search for actions
     if not repo_folder:
         repo_folder = os.getcwd()
     else:
