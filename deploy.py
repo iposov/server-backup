@@ -54,7 +54,7 @@ def do_sync(changeset_from, changeset_to, location_src, location_dst, need_delet
     else:
         delete_ard = ''
 
-    rsync_command = 'rsync -az {0}--exclude=.hg {1}/ {2}'.format(location_src, location_dst)
+    rsync_command = 'rsync -az {0}--exclude=.hg {1}/ {2}'.format(delete_arg, location_src, location_dst)
     _, err, code = command(rsync_command)
     if code:
         hookprint('Failed to sync {0} and {1}'.format(location_src, location_dst))
