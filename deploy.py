@@ -107,11 +107,9 @@ def do_deploy(repo_folder=False, repo_branch=False):
     else:
         repo_folder = os.path.abspath(repo_folder)
         os.chdir(repo_folder)
-    wd_split = os.path.split(repo_folder)
-    repos_folder = wd_split[0]
-    repo_id = wd_split[1]
+    repos_folder, repo_id = os.path.split(repo_folder)
 
-    cfg = yaml.load(open(os.path.join(repos_folder, 'deploy.yml')))
+    cfg = yaml.load(open(os.path.join(repos_folder, 'deploy.yml')))  # TODO allow to specify filename in start
 
     # get branches configuration for this repo
     if not repo_id in cfg:
@@ -121,16 +119,16 @@ def do_deploy(repo_folder=False, repo_branch=False):
     branches = cfg[repo_id]
 
     for branch_name, actions in branches.iteritems():
-        changesets = get_branch_change(branch_name)
-        branch_changed = changesets[0] != changesets[1]
+        tag_changeset, branch_changeset = get_branch_change(branch_name)
+        branch_changed = tag_changeset != branch_changeset
         # if repo_branch is not set then redeploy only changed branches
         # else redeploy only repo_branch
         if branch_changed and not repo_branch or branch_name == repo_branch:
             hookprint('Branch {0} needs to be redeployed'.format(branch_name))
-            update_repo(changesets[1])
-            do_actions(changesets[0], changesets[1], actions)
+            update_repo(branch_changeset)
+            do_actions(tag_changeset, branch_changeset, actions)
             #update bookmark
-            _, err, code = command('hg bookmark -fr {0} {1}'.format(changesets[1], last_deploy_tag_name(branch_name)))
+            _, err, code = command('hg bookmark -fr {0} {1}'.format(branch_changeset, last_deploy_tag_name(branch_name)))
         else:
             hookprint('Branch {0} does not need to be redeployed'.format(branch_name))
 
