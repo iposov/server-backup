@@ -1,0 +1,9 @@
+common:
+  - folder: /etc/mono
+  - folder: /usr/local/bin
+dces2:
+  - mongo: dces2
+#    host: db1
+#  - folder: /home/play/dces2/data
+#  - folder: /home/play/dces2/logs
+  - folder: /home/ilya/programming/server-scripts
