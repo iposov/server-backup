@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from subprocess import Popen
 import yaml
 import sys
