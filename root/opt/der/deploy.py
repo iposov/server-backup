@@ -117,7 +117,12 @@ def do_deploy(repo_folder=False, repo_branch=False):
         os.chdir(repo_folder)
     repos_folder, repo_id = os.path.split(repo_folder)
 
-    cfg = yaml.load(open(os.path.join(repos_folder, 'deploy.yml')))  # TODO allow to specify filename in start
+    try:
+        with open(os.path.join(repos_folder, 'deploy.yml')) as file_io:
+            cfg = yaml.load(file_io)
+    except IOError:
+        with open('/etc/der/deploy.yml') as file_io:
+            cfg = yaml.load(file_io)  # TODO allow to specify filename in start
 
     # get branches configuration for this repo
     if not repo_id in cfg:
