@@ -63,8 +63,7 @@ def upload_to_webdav(webdav_config):
             curl = pycurl.Curl()
             curl.setopt(pycurl.URL, url)
 
-            curl.setopt(pycurl.USERNAME, webdav_config['login'])
-            curl.setopt(pycurl.PASSWORD, webdav_config['password'])
+            curl.setopt(pycurl.USERPWD, webdav_config['login'] + ':' + webdav_config['password'])
             curl.setopt(pycurl.CUSTOMREQUEST, "MKCOL")
 
             curl.perform()
@@ -92,8 +91,7 @@ def upload_to_webdav(webdav_config):
             with open(file_to_upload_path, 'rb') as file_object:
                 curl.setopt(pycurl.URL, url + '/' + file_to_upload_name)
 
-                curl.setopt(pycurl.USERNAME, webdav_config['login'])
-                curl.setopt(pycurl.PASSWORD, webdav_config['password'])
+                curl.setopt(pycurl.USERPWD, webdav_config['login'] + ':' + webdav_config['password'])
 
                 curl.setopt(pycurl.UPLOAD, 1)
                 curl.setopt(pycurl.READFUNCTION, file_object.read)
@@ -130,8 +128,7 @@ def clear_old_files(webdav_config):
         curl = pycurl.Curl()
         curl.setopt(pycurl.URL, url)
 
-        curl.setopt(pycurl.USERNAME, webdav_config['login'])
-        curl.setopt(pycurl.PASSWORD, webdav_config['password'])
+        curl.setopt(pycurl.USERPWD, webdav_config['login'] + ':' + webdav_config['password'])
 
         #http://api.yandex.ru/disk/doc/dg/reference/propfind_contains-request.xml
         curl.setopt(pycurl.CUSTOMREQUEST, 'PROPFIND')
@@ -180,8 +177,7 @@ def clear_old_files(webdav_config):
             curl = pycurl.Curl()
             curl.setopt(pycurl.URL, delete_url)
 
-            curl.setopt(pycurl.USERNAME, webdav_config['login'])
-            curl.setopt(pycurl.PASSWORD, webdav_config['password'])
+            curl.setopt(pycurl.USERPWD, webdav_config['login'] + ':' + webdav_config['password'])
 
             curl.setopt(pycurl.CUSTOMREQUEST, 'DELETE')
 
