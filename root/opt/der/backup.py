@@ -2,6 +2,7 @@ from subprocess import Popen
 import yaml
 import sys
 import os
+import glob
 import re
 import socket
 import tarfile
@@ -244,7 +245,12 @@ def do_target(target_name, target):
 
     for action in target:
         if 'folder' in action:
-            folders_to_tar[action['folder']] = None
+            folder_glob = action['folder']
+            folders_from_glob = glob.glob(folder_glob)
+            if len(folders_from_glob) == 0:
+                print >> sys.stderr, "did not find folder(s): " + folder_glob
+            for folder in folders_from_glob:
+                folders_to_tar[folder] = None
         elif 'mongo' in action:
             mongo_output_folder = action_mongo(target_name, action)
             if mongo_output_folder is None:

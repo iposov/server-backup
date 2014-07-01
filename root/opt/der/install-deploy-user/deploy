@@ -1,0 +1,3 @@
+Cmnd_Alias DEPLOY_COMMANDS = /opt/der/deploy/
+
+%deploy ALL = (ALL) NOPASSWD: DEPLOY_COMMANDS

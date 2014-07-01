@@ -1,0 +1,2 @@
+[hooks]
+changegroup.deploy = /opt/der/deploy.py 2>&1 | tee -ai deploy.log >&2

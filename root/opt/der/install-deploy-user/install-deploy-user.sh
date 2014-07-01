@@ -16,9 +16,9 @@ mkdir -p /home/deploy/tmp
 #chmod -R g+w /home/deploy #this line removes an ability to login for user 'deploy' without password
 chmod g+rwx /home/deploy/tmp
 
-#allow mercurial user to ssh for deploy user without password
+#allow a user to ssh for deploy user without password
 mkdir -p /home/deploy/.ssh
-cat mercurial_ssh_key_pub >> /home/deploy/.ssh/authorized_keys
+cat ssh_key_pub >> /home/deploy/.ssh/authorized_keys
 #.ssh folder rights should be proper
 #http://unix.stackexchange.com/questions/36540/why-am-i-still-getting-a-password-prompt-with-ssh-with-public-key-authentication
 chmod 600 /home/deploy/.ssh/authorized_keys
