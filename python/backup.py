@@ -2,12 +2,15 @@ from subprocess import Popen
 import yaml
 import sys
 import os
+import re
 import socket
 import tarfile
 from datetime import datetime
 import tempfile
 import shutil
 import pycurl
+from StringIO import StringIO
+import xml.etree.ElementTree as ET
 # TODO import and use argparse
 
 CONFIG_FILE_NAME = "backup.yml"
@@ -15,6 +18,7 @@ WEBDAV_CREDENTIALS_FILE = "/etc/webdav-logins.yml"
 NOW = datetime.now()
 TEMP_DIR = None
 HOST = socket.gethostname()
+TIME_FORMAT = "%m-%d-%y--%H-%M-%S"
 
 
 def read_webdav_config(webdav_key):
@@ -32,16 +36,24 @@ def read_webdav_config(webdav_key):
     return cfg
 
 
-def upload_to_webdav(webdav_config):
-    print "backup: Uploading started"
-
+def webdav_url(webdav_config):
+    #returns url, and boolean, indicating weather it has a subfolder
     url = webdav_config['url']
     if 'subfolder' in webdav_config:
         sub = webdav_config['subfolder']
         if sub == '$host':
             sub = HOST
         url += '/' + sub
+        return url, True
+    else:
+        return url, False
 
+
+def upload_to_webdav(webdav_config):
+    print "backup: Uploading started"
+
+    url, has_subfolder = webdav_url(webdav_config)
+    if has_subfolder:
         # create subdirectory
         # http://api.yandex.ru/disk/doc/dg/reference/mkcol.xml
         curl = None
@@ -93,12 +105,96 @@ def upload_to_webdav(webdav_config):
                 curl.close()
 
 
+def file_date(file_name):
+    match = re.search("\d\d-\d\d-\d\d--\d\d-\d\d-\d\d", file_name)
+    if match is None:
+        return None
+    return datetime.strptime(match.group(0), TIME_FORMAT)
+
+def file_needs_to_be_removed(date):
+    # we remove files with dates older than 31 day before today, excluding the first days of months
+    delta = NOW - date
+    return delta.days > 31 and date.day != 1
+
+
 def clear_old_files(webdav_config):
-    pass
+    url, _ = webdav_url(webdav_config)
+
+    #first, read folder contents
+    response = StringIO()
+
+    curl = None
+    try:
+        curl = pycurl.Curl()
+        curl.setopt(pycurl.URL, url)
+
+        curl.setopt(pycurl.USERNAME, webdav_config['login'])
+        curl.setopt(pycurl.PASSWORD, webdav_config['password'])
+
+        #http://api.yandex.ru/disk/doc/dg/reference/propfind_contains-request.xml
+        curl.setopt(pycurl.CUSTOMREQUEST, 'PROPFIND')
+        curl.setopt(pycurl.HTTPHEADER, ['Depth: 1'])
+        curl.setopt(pycurl.WRITEFUNCTION, response.write)
+
+        curl.perform()
+    except IOError as e:
+        print >> sys.stderr, "Failed to get folder contents: " + e.message
+    finally:
+        if curl is not None:
+            curl.close()
+
+    contents_xml = response.getvalue()
+    try:
+        root = ET.fromstring(contents_xml)
+    except ET.ParseError:
+        print >> sys.stderr, "failed to parse response with the list of all backup files"
+        return
+
+    # select files from response
+    all_files = []
+    #TODO is this DAV: prefix common for WebDAV or this is only from Yandex Disk
+    for response_element in root.findall('{DAV:}response'):
+        href = response_element.find('{DAV:}href')
+        file_path = href.text
+        _, file_name = os.path.split(file_path)
+        all_files.append(file_name)
+
+    files_with_dates = [(file_name, date) for file_name, date in map(lambda f: (f, file_date(f)), all_files) if date is not None]
+
+    files_to_delete = [file_name for file_name, date in files_with_dates if file_needs_to_be_removed(date)]
+
+    # now delete all the files
+    if len(files_to_delete) > 0:
+        print "backup: Going to delete old files:"
+    else:
+        print "backup: No old files to delete"
+
+    for file_to_delete in files_to_delete:
+        print "backup: Deleting file " + file_to_delete
+        delete_url = url + '/' + file_to_delete
+
+        curl = None
+        try:
+            curl = pycurl.Curl()
+            curl.setopt(pycurl.URL, delete_url)
+
+            curl.setopt(pycurl.USERNAME, webdav_config['login'])
+            curl.setopt(pycurl.PASSWORD, webdav_config['password'])
+
+            curl.setopt(pycurl.CUSTOMREQUEST, 'DELETE')
+
+            curl.perform()
+        except IOError as e:
+            print >> sys.stderr, "Failed to delete file: " + delete_url + " message: " + e.message
+        finally:
+            if curl is not None:
+                curl.close()
+
+    print "backup: Finished deleting files"
 
 
 def create_file_name(target_name, postfix=None):  # postfix now is not used
-    time = NOW.strftime("%m-%d-%y--%H-%M-%S")
+    time = NOW.strftime(TIME_FORMAT)
     if postfix is not None:
         target_name += '-' + postfix
     return target_name + '-' + HOST + '-' + time
