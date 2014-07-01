@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 # TODO import and use argparse
 
 CONFIG_FILE_NAME = "backup.yml"
-WEBDAV_CREDENTIALS_FILE = "/etc/webdav-logins.yml"
+WEBDAV_CREDENTIALS_FILE = "/etc/der/webdav-logins.yml"
 NOW = datetime.now()
 TEMP_DIR = None
 HOST = socket.gethostname()
@@ -275,7 +275,7 @@ def try_load_config(file_path):
 def load_config():
     cfg = try_load_config(CONFIG_FILE_NAME)
     if cfg is None:
-        cfg = try_load_config('/etc/' + CONFIG_FILE_NAME)
+        cfg = try_load_config('/etc/der/' + CONFIG_FILE_NAME)
     return cfg
 
 
