@@ -17,9 +17,7 @@ TEMP_DIR = None
 HOST = socket.gethostname()
 
 
-def upload_to_webdav(webdav_key):
-    print "backup: Uploading started"
-    #read credentials
+def read_webdav_config(webdav_key):
     try:
         with open(WEBDAV_CREDENTIALS_FILE) as cfg_file:
             cfg = yaml.load(cfg_file)
@@ -31,10 +29,15 @@ def upload_to_webdav(webdav_key):
         print >> sys.stderr, "Failed to read file with WebDAV credentials " + WEBDAV_CREDENTIALS_FILE
         sys.exit(5)
 
-    #create url
-    url = cfg['url']
-    if 'subfolder' in cfg:
-        sub = cfg['subfolder']
+    return cfg
+
+
+def upload_to_webdav(webdav_config):
+    print "backup: Uploading started"
+
+    url = webdav_config['url']
+    if 'subfolder' in webdav_config:
+        sub = webdav_config['subfolder']
         if sub == '$host':
             sub = HOST
         url += '/' + sub
@@ -46,8 +49,8 @@ def upload_to_webdav(webdav_key):
             curl = pycurl.Curl()
             curl.setopt(pycurl.URL, url)
 
-            curl.setopt(pycurl.USERNAME, cfg['login'])
-            curl.setopt(pycurl.PASSWORD, cfg['password'])
+            curl.setopt(pycurl.USERNAME, webdav_config['login'])
+            curl.setopt(pycurl.PASSWORD, webdav_config['password'])
             curl.setopt(pycurl.CUSTOMREQUEST, "MKCOL")
 
             curl.perform()
@@ -75,8 +78,8 @@ def upload_to_webdav(webdav_key):
             with open(file_to_upload_path, 'rb') as file_object:
                 curl.setopt(pycurl.URL, url + '/' + file_to_upload_name)
 
-                curl.setopt(pycurl.USERNAME, cfg['login'])
-                curl.setopt(pycurl.PASSWORD, cfg['password'])
+                curl.setopt(pycurl.USERNAME, webdav_config['login'])
+                curl.setopt(pycurl.PASSWORD, webdav_config['password'])
 
                 curl.setopt(pycurl.UPLOAD, 1)
                 curl.setopt(pycurl.READFUNCTION, file_object.read)
@@ -90,26 +93,33 @@ def upload_to_webdav(webdav_key):
                 curl.close()
 
 
-def create_file_name(target_name, postfix=None):
+def clear_old_files(webdav_config):
+    pass
+
+
+def create_file_name(target_name, postfix=None):  # postfix now is not used
     time = NOW.strftime("%m-%d-%y--%H-%M-%S")
     if postfix is not None:
         target_name += '-' + postfix
     return target_name + '-' + HOST + '-' + time
 
 
-def action_tar(target_name, folders_to_tar):
-    print "backup:", "taring folders " + ", ".join(folders_to_tar)
+def tar_list_of_folders(target_name, folders_to_tar):
+    #folders_to_tar: a map, key is a full folder path, value is either a name to use in tar or None
+    print "backup:", "taring folders " + ", ".join(folders_to_tar.keys())
     tar_file_name = create_file_name(target_name) + '.tar.gz'
     with tarfile.open(TEMP_DIR + '/' + tar_file_name, mode="w:gz") as tar_file:
-        for folder in folders_to_tar:
-            tar_file.add(folder)
+        for folder, arcname in folders_to_tar.iteritems():
+            tar_file.add(folder, arcname=arcname)
 
 
+#returns path to folder
 def action_mongo(target_name, action):
     db_name = action['mongo']
-    output_folder_name = TEMP_DIR + '/' + db_name + '-mongo-backup'
+    output_folder_name = target_name + '-mongo-backup'  # this makes all dbs go to one folder
+    output_folder_path = TEMP_DIR + '/' + output_folder_name
 
-    mongo_command = ["mongodump", "--db", db_name, "-o", output_folder_name]
+    mongo_command = ["mongodump", "--db", db_name, "-o", output_folder_path]
 
     host = action.get('host', '$local')
 
@@ -124,26 +134,29 @@ def action_mongo(target_name, action):
     print "backup: mongodump return code " + str(dumper.returncode)
 
     if dumper.returncode != 0:
-        return
+        return None
 
     #taring result
     print "backup: taring mongodump result"
-    mongo_tar_file_name = create_file_name(target_name, 'mongodb-' + db_name) + '.tar.gz'
-    with tarfile.open(TEMP_DIR + '/' + mongo_tar_file_name, mode="w:gz") as tar_file:
-        tar_file.add(output_folder_name)
+
+    return output_folder_name
 
 
 def do_target(target_name, target):
     print "backup: Backing up target " + target_name
-    folders_to_tar = []
+    folders_to_tar = {}
 
     for action in target:
         if 'folder' in action:
-            folders_to_tar.append(action['folder'])
+            folders_to_tar[action['folder']] = None
         elif 'mongo' in action:
-            action_mongo(target_name, action)
+            mongo_output_folder = action_mongo(target_name, action)
+            if mongo_output_folder is None:
+                print >> sys.stderr, "Failed to create mongo dump"
+                sys.exit(7)
+            folders_to_tar[TEMP_DIR + '/' + mongo_output_folder] = mongo_output_folder
 
-    action_tar(target_name, folders_to_tar)
+    tar_list_of_folders(target_name, folders_to_tar)
 
 
 #returns config loaded from file_path or None if failed
@@ -190,15 +203,17 @@ if __name__ == '__main__':
         if len(sys.argv) != 3:
             print >> sys.stderr, "Usage: backup.py webdav -a|--all|target-name"
             sys.exit(1)
-        webdav = sys.argv[1]
-        target_arg = sys.argv[2]
-        if target_arg == '-a' or target_arg == '--all':
+        _webdav = sys.argv[1]
+        _target_arg = sys.argv[2]
+        if _target_arg == '-a' or _target_arg == '--all':
             do_backup()
         else:
-            do_backup(target_arg)
+            do_backup(_target_arg)
 
-        upload_to_webdav(webdav)
+        _webdav_config = read_webdav_config(_webdav)
+
+        upload_to_webdav(_webdav_config)
+        clear_old_files(_webdav_config)
 
     finally:
         shutil.rmtree(TEMP_DIR, ignore_errors=True)
-        # pass

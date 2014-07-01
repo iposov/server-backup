@@ -3,6 +3,7 @@ common:
   - folder: /usr/local/bin
 dces2:
   - mongo: dces2
+  - mongo: bbtc
 #    host: db1
 #  - folder: /home/play/dces2/data
 #  - folder: /home/play/dces2/logs
