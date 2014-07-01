@@ -15,6 +15,9 @@ from StringIO import StringIO
 import xml.etree.ElementTree as ET
 # TODO import and use argparse
 
+# TODO encrypt backups
+# TODO save output to log
+
 CONFIG_FILE_NAME = "backup.yml"
 WEBDAV_CREDENTIALS_FILE = "/etc/der/webdav-logins.yml"
 NOW = datetime.now()
