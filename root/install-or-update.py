@@ -23,7 +23,7 @@ for config_file_example in os.listdir(etc_der_folder):
         continue
     config_file_name = match.group(1) + match.group(2)
 
-    destination_file = '/etc/der/' + config_file_example
+    destination_file = '/etc/der/' + config_file_name
     if not os.path.isfile(destination_file):
         shutil.copyfile(etc_der_folder + '/' + config_file_example, destination_file)
 
