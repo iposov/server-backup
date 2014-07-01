@@ -3,8 +3,6 @@
 
 useradd -m -s /bin/bash deploy
 
-mkdir -p /usr/local/bin/deploy
-
 #need to copy sudoers file and make absolutely sure it is 440, otherwise sudo does not run
 chmod 440 deploy
 cp deploy /etc/sudoers.d/
