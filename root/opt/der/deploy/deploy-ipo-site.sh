@@ -43,4 +43,4 @@ chown -R $WWW_USER: $WWW_FOLDER/journal/last_year.dat
 chown -R $WWW_USER: $WWW_FOLDER/journal/gal_public/images
 chown -R $WWW_USER: $WWW_FOLDER/journal/gal_public/obloz
 
-chmod -R u=rwX,go=rX /var/www/html/journal/
+chmod -R u=rwX,go=rX $WWW_FOLDER/journal $WWW_FOLDER/site $WWW_FOLDER/projects
