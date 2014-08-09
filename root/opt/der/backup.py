@@ -22,6 +22,7 @@ CONFIG_FILE_NAME = "backup.yml"
 WEBDAV_CREDENTIALS_FILE = "/etc/der/webdav-logins.yml"
 NOW = datetime.now()
 TEMP_DIR = None
+CREDENTIALS = None
 HOST = socket.gethostname()
 TIME_FORMAT = "%m-%d-%y--%H-%M-%S"
 
@@ -113,6 +114,7 @@ def file_date(file_name):
     if match is None:
         return None
     return datetime.strptime(match.group(0), TIME_FORMAT)
+
 
 def file_needs_to_be_removed(date):
     # we remove files with dates older than 31 day before today, excluding the first days of months
@@ -233,8 +235,48 @@ def action_mongo(target_name, action):
     if dumper.returncode != 0:
         return None
 
-    #taring result
-    print "backup: taring mongodump result"
+    return output_folder_name
+
+
+def action_mysql(target_name, action):
+    db_name = action['mysql']
+    output_folder_name = target_name + '-mysql-backup'  # this makes all dbs go to one folder
+    output_folder_path = TEMP_DIR + '/' + output_folder_name
+
+    if not os.path.exists(output_folder_path):
+        os.makedirs(output_folder_path)
+
+    mysql_command = ["mysqldump", "-B"]
+
+    if 'auth' in action:
+        auth = action['auth']
+        user = CREDENTIALS[auth]['login']
+        password = CREDENTIALS[auth]['password']
+        mysql_command.append('-u')
+        mysql_command.append(user)
+        mysql_command.append('"-p' + str(password) + '"')
+
+    mysql_command.append(db_name)
+    mysql_command.append(">")
+    mysql_command.append(output_folder_path + '/' + db_name + '.sql')
+
+    host = action.get('host', '$local')
+    if host != '$local':
+        mysql_command.append("-h")
+        mysql_command.append(host)
+
+    print "backup: Starting mysql dump for db %s on host %s" % (db_name, 'localhost')
+
+    # if host != '$local':
+    #     mongo_command += ["--host", host]
+
+    dumper = Popen(" ".join(mysql_command), shell=True)
+    dumper.communicate()
+
+    print "backup: mysqldump return code " + str(dumper.returncode)
+
+    if dumper.returncode != 0:
+        return None
 
     return output_folder_name
 
@@ -257,6 +299,12 @@ def do_target(target_name, target):
                 print >> sys.stderr, "Failed to create mongo dump"
                 sys.exit(7)
             folders_to_tar[TEMP_DIR + '/' + mongo_output_folder] = mongo_output_folder
+        elif 'mysql' in action:
+            mysql_output_folder = action_mysql(target_name, action)
+            if mysql_output_folder is None:
+                print >> sys.stderr, "Failed to create mysql dump"
+                sys.exit(8)
+            folders_to_tar[TEMP_DIR + '/' + mysql_output_folder] = mysql_output_folder
 
     tar_list_of_folders(target_name, folders_to_tar)
 
@@ -300,6 +348,9 @@ def do_backup(target_name=None):
 
 if __name__ == '__main__':
     TEMP_DIR = tempfile.mkdtemp()
+
+    with open('/etc/der/logins.yml') as credentials_file:
+        CREDENTIALS = yaml.load(credentials_file)
 
     try:
         if len(sys.argv) != 3:

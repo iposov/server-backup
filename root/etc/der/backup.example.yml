@@ -8,3 +8,8 @@ dces2:
   - folder: /home/play/dces2/data
   - folder: /home/play/dces2/logs
   - folder: /home/ilya/programming/server-scripts
+mysql-example:
+  - mysql: database1
+    auth: mysql 1
+  - mysql: database2
+    auth: mysql 2

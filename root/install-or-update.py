@@ -28,8 +28,9 @@ for config_file_example in os.listdir(etc_der_folder):
         shutil.copyfile(etc_der_folder + '/' + config_file_example, destination_file)
 
 os.chmod('/etc/der/webdav-logins.yml', 0600)
+os.chmod('/etc/der/logins.yml', 0600)
 
-# remove /opt/der if it already exists, the copy new version
+# remove /opt/der if it already exists, then copy a new version
 
 if os.path.isdir('/opt/der'):
     shutil.rmtree('/opt/der')
