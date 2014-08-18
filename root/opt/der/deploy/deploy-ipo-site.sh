@@ -29,6 +29,7 @@ rsync -a --stats --delete                \
 # TODO probably exclude spaw2 uploads
 rsync -a --stats --delete                \
   --exclude config.php                   \
+  --exclude db_config.php                \
                                          \
   $SOURCES_FOLDER/projects/ $WWW_FOLDER/projects
 
