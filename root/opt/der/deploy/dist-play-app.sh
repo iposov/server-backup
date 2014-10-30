@@ -42,3 +42,6 @@ sudo -u deploy cp -f $CREATED_ZIP $OUTPUT_FOLDER
 echo $LOCAL_REVISION > $DIST_VERSION_FILE
 chown deploy: $DIST_VERSION_FILE
 
+#copy also public folder with assets
+PUBLIC_FOLDER=$SOURCES_FOLDER/public
+cp -r $PUBLIC_FOLDER $OUTPUT_FOLDER/

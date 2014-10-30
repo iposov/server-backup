@@ -22,11 +22,11 @@ sudo -u deploy unzip $DIST_FILE
 /opt/der/deploy/stop-play-app.sh $APP_NAME
 sudo -u play rm -f $PID_FILE
 
-#renew lib/ and bin/
-sudo -u play rm -rf $OUTPUT_DIR/lib $OUTPUT_DIR/bin
+#renew lib/ and bin/ and public/
+sudo -u play rm -rf $OUTPUT_DIR/lib $OUTPUT_DIR/bin $OUTPUT_DIR/public
 sudo -u play cp -r $DIST_UNZIPPED_FOLDER/lib $OUTPUT_DIR
 sudo -u play cp -r $DIST_UNZIPPED_FOLDER/bin $OUTPUT_DIR
+sudo -u play cp -r $DIST_FOLDER/public $OUTPUT_DIR
 
 #start app again
 /opt/der/deploy/start-play-app.sh $APP_NAME
-
