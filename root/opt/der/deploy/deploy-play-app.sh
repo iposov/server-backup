@@ -2,7 +2,14 @@
 #usage deploy-play-app app-name
 
 APP_NAME=$1
-DIST_FOLDER=/home/deploy/tmp/$APP_NAME
+#dist app name is a name of folder with a source application
+DIST_APP_NAME=$2
+
+if [ -z "$DIST_APP_NAME" ]; then
+    DIST_APP_NAME=$APP_NAME
+fi
+
+DIST_FOLDER=/home/deploy/tmp/$DIST_APP_NAME
 
 #read distribution file name
 DIST_FILE_NAME_HINT=$DIST_FOLDER/.dist.name
