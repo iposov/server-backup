@@ -11,4 +11,4 @@ if [ "$PORT" == "" ]; then
   exit 1
 fi
 
-start-stop-daemon --chuid play --start --background --verbose --pidfile /home/play/$APP_NAME/RUNNING_PID --exec /home/play/$1/bin/$1 -- -Dhttp.port=$PORT -Dlogger.file=/etc/der/play-application-logger.xml -Dconfig.file=/home/play/$APP_NAME/application.conf $EXTRA_ARGS
+start-stop-daemon --chuid play --start --background --verbose --pidfile /home/play/$APP_NAME/RUNNING_PID --exec /home/play/$APP_NAME/bin/$APP_NAME -- -Dhttp.port=$PORT -Dlogger.file=/etc/der/play-application-logger.xml -Dconfig.file=/home/play/$APP_NAME/application.conf $EXTRA_ARGS

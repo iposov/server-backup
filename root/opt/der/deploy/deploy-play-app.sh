@@ -35,5 +35,8 @@ sudo -u play cp -r $DIST_UNZIPPED_FOLDER/lib $OUTPUT_DIR
 sudo -u play cp -r $DIST_UNZIPPED_FOLDER/bin $OUTPUT_DIR
 sudo -u play cp -r $DIST_FOLDER/public $OUTPUT_DIR
 
+#rename boot script
+sudo -u play cp $OUTPUT_DIR/bin/$DIST_APP_NAME $OUTPUT_DIR/bin/$APP_NAME
+
 #start app again
 /opt/der/deploy/start-play-app.sh $APP_NAME
