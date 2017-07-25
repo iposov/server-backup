@@ -1,8 +1,0 @@
-files in play home dir:
-  play-ver.zip       (play framework files distribution)
-  play-ver           (unzipped files)
-  play -> play-ver   (soft link)
-
-in /usr/local/bin
-
-  play-framework   -> /home/play/play/play    (soft link)
