@@ -1,7 +1,7 @@
 from Action import Action
 
 import os
-from lib.subprocess_helper import call
+import lib.subprocess_helper as sh
 
 
 class MysqlAction(Action):
@@ -28,9 +28,9 @@ class MysqlAction(Action):
             user = credentials['login']
             password = credentials['password']
 
-            mysql_command += ['-u', user, '-p%s' % password]
+            mysql_command += ['-u', user, sh.secret('-p%s' % password)]
 
-        mysql_command += [db_name, ['>'], os.path.join(self.tar_element().path, db_name + '.sql')]
+        mysql_command += [db_name, sh.as_is('>'), os.path.join(self.tar_element().path, db_name + '.sql')]
 
         host = self.action_description.get('host', '$local')
         if host != '$local':
@@ -38,7 +38,7 @@ class MysqlAction(Action):
 
         # TODO implement other hosts
         self.context.log("backup: Starting mysql dump for db %s on host %s" % (db_name, host))
-        return_code = call(mysql_command, logger=self.context.log)
+        return_code = sh.call(mysql_command, logger=self.context.log)
 
         if return_code != 0:
             self.context.log_error("Failed to create mysql dump, return code %d" % return_code)

@@ -30,7 +30,6 @@ if __name__ == '__main__':
                     tar_archive.add(tar_element)
                 tar_archives_paths.append(tar_path)
 
-        #TODO destination send
-        # for destination in destinations:
-        #     for tar_archive in tar_archives:
-        #         destination.send()
+        for destination in destinations:
+            for tar_path in tar_archives_paths:
+                destination.send(tar_path)
