@@ -20,7 +20,7 @@ if __name__ == '__main__':
             print >> sys.stderr, "Unknown destination {0}".format(context.target_name)
             sys.exit(3)
 
-        tar_archives = []
+        tar_archives_paths = []
         for target in targets:
             tar_path = target.tar_path()
             with TarArchive(tar_path) as tar_archive:
@@ -28,7 +28,7 @@ if __name__ == '__main__':
                 for tar_element in tar_elements:
                     context.log('taring %s' % tar_element.description())
                     tar_archive.add(tar_element)
-                tar_archives.append(tar_archive)
+                tar_archives_paths.append(tar_path)
 
         #TODO destination send
         # for destination in destinations:
