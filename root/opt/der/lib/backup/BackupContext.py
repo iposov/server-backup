@@ -13,7 +13,7 @@ from Target import Target
 
 class BackupContext:
 
-    def __init__(self):
+    def __init__(self, argparse_callback):
         def _load_yaml(filename, required=True):
             try:
                 with open(filename) as config_file:
@@ -29,16 +29,14 @@ class BackupContext:
         parser.add_argument("-b", "--backups", required=False, default='/etc/der/backup.yml')
         parser.add_argument("-c", "--credentials", required=False, default='/etc/der/credentials.yml')
         parser.add_argument("-d", "--destinations", required=False, default='/etc/der/destinations.yml')
-        parser.add_argument("target", help="target id or 'all'")
-        parser.add_argument("destination", help="id of a destination to store backup")
-        args = parser.parse_args()
 
-        self.config = _load_yaml(args.backups)
-        self.credentials = _load_yaml(args.credentials, required=False)
-        self.destinations = _load_yaml(args.destinations)
+        argparse_callback(parser)
 
-        self.target_name = args.target
-        self.destination_id = args.destination
+        self.args = parser.parse_args()
+
+        self.config = _load_yaml(self.args.backups)
+        self.credentials = _load_yaml(self.args.credentials, required=False)
+        self.destinations = _load_yaml(self.args.destinations)
 
         self.now = datetime.now()
         self.host = socket.gethostname()
@@ -46,22 +44,25 @@ class BackupContext:
         self.temp_dir = tempfile.mkdtemp()
         self.log("using temporary dir %s" % self.temp_dir)
 
-    def get_targets(self):
+    def get_parser_argument(self, arg):
+        return self.args[arg]
 
-        if self.target_name == 'all':
+    def get_targets(self, specified_target_name):
+
+        if specified_target_name == 'all':
             result = []
             for target_name, target in self.config.iteritems():
                 result.append(Target(self, target_name, target))
             return result
         else:
-            if self.target_name not in self.config:
+            if specified_target_name not in self.config:
                 return []
             else:
-                return [Target(self, self.target_name, self.config[self.target_name])]
+                return [Target(self, specified_target_name, self.config[specified_target_name])]
 
-    def get_destinations(self):
-        if self.destination_id in self.destinations:
-            return [Destination.create(self.destination_id, self.destinations[self.destination_id])]
+    def get_destinations(self, specified_destination_id):
+        if specified_destination_id in self.destinations:
+            return [Destination.create(specified_destination_id, self.destinations[specified_destination_id])]
         else:
             return []
 

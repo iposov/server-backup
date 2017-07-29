@@ -1,15 +1,17 @@
 class Destination:
+
     @staticmethod
-    def create(destination_id, destination_description):
+    def create(context, destination_id, destination_description):
         import PathDestination, WebdavDestination
         destinations = [PathDestination.PathDestination, WebdavDestination.WebdavDestination]
         for d in destinations:
             if d.NAME in destination_description:
-                return d(destination_id, destination_description)
+                return d(context, destination_id, destination_description)
 
         pass
 
-    def __init__(self, destination_id, destination_description):
+    def __init__(self, context, destination_id, destination_description):
+        self.context = context
         self.destination_id = destination_id
         self.destination = destination_description
 

@@ -28,19 +28,6 @@ def read_webdav_config(webdav_key):
     return cfg
 
 
-def webdav_url(webdav_config):
-    # returns url, and boolean, indicating weather it has a subfolder
-    url = webdav_config['url']
-    if 'subfolder' in webdav_config:
-        sub = webdav_config['subfolder']
-        if sub == '$host':
-            sub = HOST
-        url += '/' + sub
-        return url, True
-    else:
-        return url, False
-
-
 def upload_to_webdav(webdav_config):
     print "backup: Uploading started"
 

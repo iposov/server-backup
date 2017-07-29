@@ -30,7 +30,7 @@ class MysqlAction(Action):
 
             mysql_command += ['-u', user, sh.secret('-p%s' % password)]
 
-        mysql_command += [db_name, sh.as_is('>'), os.path.join(self.tar_element().path, db_name + '.sql')]
+        mysql_command += [db_name, sh.as_is('>'), os.path.join(self._tar_element().path, db_name + '.sql')]
 
         host = self.action_description.get('host', '$local')
         if host != '$local':

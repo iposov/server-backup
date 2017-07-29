@@ -1,20 +1,19 @@
 #!/usr/bin/python
 import sys
 
-# TODO encrypt backups, use gpg with an asymmetric key
-# TODO save output to log
 from lib.backup.BackupContext import BackupContext
-from lib.backup.TarArchive import TarArchive
 
 
 if __name__ == '__main__':
     def argparse_callback(parser):
-        parser.add_argument("target", help="target id or 'all'")
+        parser.add_argument("target", help="target id")
         parser.add_argument("destination", help="id of a destination to store backup")
+        parser.add_argument("filename", help="filename to restore")  # TODO make it possible to list files
 
     with BackupContext(argparse_callback) as context:
         target_name = context.get_parser_argument('target')
         destination_id = context.get_parser_argument('destination')
+        filename = context.get_parser_argument('filename')
 
         targets = context.get_targets(target_name)
         destinations = context.get_destinations(destination_id)
@@ -22,21 +21,18 @@ if __name__ == '__main__':
         if not targets:
             context.log_error("Unknown target {0}".format(context.target_name))
             sys.exit(2)
+        if len(targets) != 1:
+            context.log_error('You must specify exactly one target to restore')
+            sys.exit(2)
 
         if not destinations:
             context.log_error("Unknown destination {0}".format(context.target_name))
             sys.exit(3)
+        if len(destinations) != 1:
+            context.log_error('You must specify exactly one destination from which to restore')
+            sys.exit(3)
 
-        tar_archives_paths = []
-        for target in targets:
-            tar_path = target.tar_path()
-            with TarArchive(tar_path) as tar_archive:
-                tar_elements = target.run()
-                for tar_element in tar_elements:
-                    context.log('taring %s' % tar_element.description())
-                    tar_archive.add(tar_element)
-                tar_archives_paths.append(tar_path)
+        destination = destinations[0]
+        target = targets[0]
 
-        for destination in destinations:
-            for tar_path in tar_archives_paths:
-                destination.send(tar_path)
+        destination.download(filename, context.temp_dir)

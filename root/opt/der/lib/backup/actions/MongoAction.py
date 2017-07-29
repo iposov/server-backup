@@ -13,7 +13,7 @@ class MongoAction(Action):
 
         db_name = self.action_description[MongoAction.NAME]
 
-        mongo_command = ["mongodump", "--db", db_name, "-o", self.tar_element().path]
+        mongo_command = ["mongodump", "--db", db_name, "-o", self._tar_element().path]
 
         host = self.action_description.get('host', '$local')
         if host != '$local':

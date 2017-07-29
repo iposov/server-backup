@@ -37,10 +37,10 @@ class Action:
                 tar_element_name
             )]
 
-    def tar_element(self):
+    def _tar_element(self):
         return self.tar_elements()[0]
 
-    # create paths if they do not exist
+    # create paths if they do not exist, TODO make creating paths a separate function
     def run(self):
         tar_elements = self.tar_elements()
         for tar_element in tar_elements:
