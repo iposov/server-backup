@@ -18,6 +18,7 @@ class Destination:
     def upload(self, local_path):
         pass
 
+    # should return local download path
     def download(self, file_name, local_dir):
         pass
 

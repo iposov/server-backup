@@ -23,10 +23,21 @@ class Target:
         tar_elements = []
 
         for action in self.actions:
-            tar_elements.extend(action.tar_elements())
-            action.run()
+            tar_elements += action.run()
 
         return tar_elements
+
+    def restore(self, tar_archive):
+
+        tar_elements = []
+        for action in self.actions:
+            tar_elements += action.pre_restore(tar_archive)
+
+        for tar_element in tar_elements:
+            tar_archive.extract(tar_element)
+
+        for action in self.actions:
+            action.restore()
 
     def tar_name(self):
         # TODO we previously had a postfix here, but did not use it

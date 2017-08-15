@@ -16,6 +16,8 @@ if __name__ == '__main__':
         target_name = context.get_parser_argument('target')
         destination_id = context.get_parser_argument('destination')
 
+        context.set_temp_dir()
+
         targets = context.get_targets(target_name)
         destinations = context.get_destinations(destination_id)
 
@@ -33,10 +35,12 @@ if __name__ == '__main__':
             with TarArchive(tar_path) as tar_archive:
                 tar_elements = target.run()
                 for tar_element in tar_elements:
-                    context.log('taring %s' % tar_element.description())
+                    context.log(u'taring {} as {}'.format(tar_element.path, tar_element.tar_path))
                     tar_archive.add(tar_element)
                 tar_archives_paths.append(tar_path)
 
         for destination in destinations:
             for tar_path in tar_archives_paths:
-                destination.send(tar_path)
+                destination.upload(tar_path)
+
+        # TODO remove old backups

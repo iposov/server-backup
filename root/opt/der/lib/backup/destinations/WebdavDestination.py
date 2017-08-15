@@ -137,11 +137,15 @@ class WebdavDestination(Destination):
         #TODO handle CURL error
         except IOError as e:
             self.context.log_error("Failed to download file " + file_name + " error: " + e.message)
+            return
         except pycurl.error as e:
             self.context.log_error("Failed to download file " + file_name + " error: " + e.message)
+            return
         finally:
             if curl is not None:
                 curl.close()
+
+        return local_path
 
 
     def ensure_folder_exists(self):

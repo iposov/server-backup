@@ -41,11 +41,13 @@ class BackupContext:
         self.now = datetime.now()
         self.host = socket.gethostname()
 
-        self.temp_dir = tempfile.mkdtemp()
-        self.log("using temporary dir %s" % self.temp_dir)
+        self.temp_dir = None
+        self.temp_dir_delete = False
+
+        self.dry_run = False
 
     def get_parser_argument(self, arg):
-        return self.args[arg]
+        return getattr(self.args, arg)
 
     def get_targets(self, specified_target_name):
 
@@ -62,9 +64,17 @@ class BackupContext:
 
     def get_destinations(self, specified_destination_id):
         if specified_destination_id in self.destinations:
-            return [Destination.create(specified_destination_id, self.destinations[specified_destination_id])]
+            return [Destination.create(self, specified_destination_id, self.destinations[specified_destination_id])]
         else:
             return []
+
+    def set_temp_dir(self, temp_dir=None, delete=True):
+        if temp_dir is None:
+            self.temp_dir = tempfile.mkdtemp()
+        else:
+            self.temp_dir = unicode(os.path.abspath(temp_dir), encoding='utf8')
+        self.temp_dir_delete = delete
+        self.log("using temporary dir %s" % self.temp_dir)
 
     def __enter__(self):
         return self
@@ -73,8 +83,8 @@ class BackupContext:
         self.close()
 
     def close(self):
-        pass
-        # shutil.rmtree(self.temp_dir, ignore_errors=True)
+        if self.temp_dir_delete:
+            shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def log(self, message):  # TODO add prefix, datetime
         print message

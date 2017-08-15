@@ -8,9 +8,11 @@ class PathDestination(Destination):
 
     NAME = 'path'
 
-    def __init__(self, destination_id, destination_description):
-        Destination.__init__(self, destination_id, destination_description)
+    def __init__(self, context, destination_id, destination_description):
+        Destination.__init__(self, context, destination_id, destination_description)
         self.path = destination_description[PathDestination.NAME]
+        if not os.path.exists(self.path):
+            context.log_error('path for path-destination does not exist: ' + self.path)
 
     def remote_path(self, name):
         return os.path.join(self.path, name)
@@ -26,7 +28,9 @@ class PathDestination(Destination):
         os.listdir(self.path)
 
     def download(self, file_name, local_dir):
-        shutil.copyfile(self.remote_path(file_name), os.path.join(local_dir, file_name))
+        local_download_path = os.path.join(local_dir, file_name)
+        shutil.copyfile(self.remote_path(file_name), local_download_path)
+        return local_download_path
 
     def close(self):
         pass
