@@ -8,7 +8,11 @@ from lib.backup.TarArchive import TarArchive
 
 if __name__ == '__main__':
     def argparse_callback(parser):
-        parser.add_argument("--put-back", help="overwrite the location where the backup was taken from")
+        parser.add_argument(
+            "--put-back",
+            help="overwrite the location where the backup was taken from",
+            action="store_true"
+        )
 
         parser.add_argument("target", help="target id")
         parser.add_argument("destination", help="id of a destination to store backup")
@@ -19,6 +23,8 @@ if __name__ == '__main__':
         destination_id = context.get_parser_argument('destination')
         filename = context.get_parser_argument('filename')  # TODO allow omitting extension
         put_back = context.get_parser_argument("put_back")
+
+        print "put back", put_back
 
         context.dry_run = not put_back
         if context.dry_run:
