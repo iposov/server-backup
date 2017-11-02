@@ -42,7 +42,7 @@ class WebdavDestination(Destination):
         file_name = os.path.basename(local_path)
         file_size = os.path.getsize(local_path)
 
-        print "backup: Uploading file %s, size %d bytes" % (file_name, file_size)
+        self.context.log("backup: Uploading file {}, size {:d} bytes".format(file_name, file_size))
 
         curl = None
         try:
@@ -121,7 +121,7 @@ class WebdavDestination(Destination):
         remote_url = urlparse.urljoin(self.full_url, file_name)
         file_size = os.path.getsize(local_path)
 
-        print "Downloading file %s" % file_name
+        self.context.log("Downloading file {}".format(file_name))
 
         curl = None
         try:

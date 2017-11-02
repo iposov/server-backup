@@ -1,5 +1,4 @@
 yandex-disk-1:
   url: https://webdav.yandex.ru
   subfolder: $host
-  login: login
-  password: password
+  auth: yandex disk 1
