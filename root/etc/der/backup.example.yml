@@ -5,9 +5,9 @@ dces2:
   - mongo: dces2
   - mongo: bbtc
     host: db1
-  - folder: /home/play/dces2/data
-  - folder: /home/play/dces2/logs
-  - folder: /home/ilya/programming/server-scripts
+  - paths: /home/play/dces2/data
+  - paths: /home/play/dces2/logs
+  - paths: /home/ilya/programming/server-scripts
 mysql-example:
   - mysql: database1
     auth: mysql 1

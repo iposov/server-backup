@@ -8,7 +8,9 @@ class Destination:
             if d.NAME in destination_description:
                 return d(context, destination_id, destination_description)
 
-        pass
+        context.log_error("Can not understand destination {}".format(destination_id))
+        import sys
+        sys.exit(1)
 
     def __init__(self, context, destination_id, destination_description):
         self.context = context

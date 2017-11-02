@@ -10,6 +10,9 @@ class Action:
         for a in actions:
             if a.NAME in action_description:
                 return a(target, action_description)
+        target.context.log_error("Action description can not be recognized")
+        import sys
+        sys.exit(1)
 
     def __init__(self, target, action_description):
         """

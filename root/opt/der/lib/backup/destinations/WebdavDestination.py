@@ -4,11 +4,11 @@ import urlparse
 import os
 import pycurl
 
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as Et
 from StringIO import StringIO
 
-class WebdavDestination(Destination):
 
+class WebdavDestination(Destination):
     NAME = 'webdav'
 
     def __init__(self, context, destination_id, destination_description):
@@ -37,7 +37,6 @@ class WebdavDestination(Destination):
 
         self.ensure_folder_exists()
 
-
     def upload(self, local_path):
         file_name = os.path.basename(local_path)
         file_size = os.path.getsize(local_path)
@@ -57,7 +56,7 @@ class WebdavDestination(Destination):
                 curl.setopt(pycurl.INFILESIZE, file_size)
 
                 curl.perform()
-        #TODO handle CURL error
+        # TODO handle CURL error
         except IOError as e:
             self.context.log_error("Failed to upload file " + file_name + " error: " + e.message)
         except pycurl.error as e:
@@ -84,7 +83,7 @@ class WebdavDestination(Destination):
 
             curl.perform()
 
-        #TODO handle CURL error
+        # TODO handle CURL error
         except IOError as e:
             self.context.log_error("Failed to get folder contents: " + e.message)
             return []
@@ -99,8 +98,8 @@ class WebdavDestination(Destination):
 
         contents_xml = response.getvalue()
         try:
-            root = ET.fromstring(contents_xml)
-        except ET.ParseError:
+            root = Et.fromstring(contents_xml)
+        except Et.ParseError:
             self.context.log_error("failed to parse response with the list of all backup files")
             return
 
@@ -114,9 +113,8 @@ class WebdavDestination(Destination):
 
         return all_files
 
-
     def download(self, file_name, local_dir):
-        #TODO test
+        # TODO test
         local_path = os.path.join(local_dir, file_name)
         remote_url = urlparse.urljoin(self.full_url, file_name)
         file_size = os.path.getsize(local_path)
@@ -134,7 +132,7 @@ class WebdavDestination(Destination):
                 curl.setopt(pycurl.WRITEFUNCTION, file_object.write)
 
                 curl.perform()
-        #TODO handle CURL error
+        # TODO handle CURL error
         except IOError as e:
             self.context.log_error("Failed to download file " + file_name + " error: " + e.message)
             return
@@ -146,7 +144,6 @@ class WebdavDestination(Destination):
                 curl.close()
 
         return local_path
-
 
     def ensure_folder_exists(self):
         curl = None
@@ -166,9 +163,10 @@ class WebdavDestination(Destination):
             elif http_result_code == 405:
                 self.context.log("Remote folder %s already exists" % self.path)
             else:
-                self.context.log_error("Got http response %d while creating remote folder %s" % (http_result_code, self.path))
+                self.context.log_error(
+                    "Got http response %d while creating remote folder %s" % (http_result_code, self.path))
 
-        #TODO handle CURL error
+        # TODO handle CURL error
         except IOError as e:
             self.context.log_error("Failed to create remote folder " + e.message)
         except pycurl.error as e:

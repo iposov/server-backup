@@ -22,11 +22,11 @@ if __name__ == '__main__':
         destinations = context.get_destinations(destination_id)
 
         if not targets:
-            context.log_error("Unknown target {0}".format(context.target_name))
+            context.log_error("Unknown target {0}".format(target_name))
             sys.exit(2)
 
         if not destinations:
-            context.log_error("Unknown destination {0}".format(context.target_name))
+            context.log_error("Unknown destination {0}".format(destination_id))
             sys.exit(3)
 
         tar_archives_paths = []
