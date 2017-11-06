@@ -77,7 +77,7 @@ class BackupContext:
         else:
             self.temp_dir = unicode(os.path.abspath(temp_dir), encoding='utf8')
         self.temp_dir_delete = delete
-        self.log("using temporary dir %s" % self.temp_dir)
+        self.log("using temporary dir {}; delete it: {}".format(self.temp_dir, self.temp_dir_delete))
 
     def __enter__(self):
         return self
