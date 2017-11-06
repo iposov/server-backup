@@ -118,6 +118,7 @@ class WebdavDestination(Destination):
         local_path = os.path.join(local_dir, file_name)
 
         if os.path.isfile(local_path):  # TODO test also filesize to be sure that file is the same as the remote file
+            self.context.log("found local file " + local_path)
             return local_path
 
         remote_url = urlparse.urljoin(self.full_url, file_name)

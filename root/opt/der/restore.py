@@ -22,11 +22,11 @@ if __name__ == '__main__':
         parser.add_argument("-D", "--delete-temporary-dir", required=False, default=None)
 
 
-    def delete_temporary_dir(arg_value, default):
+    def delete_temporary_dir(arg_value, restore_dir):
         if arg_value == '1' or arg_value == 'yes' or arg_value == 'true':
             return True
         elif arg_value is None:
-            return default
+            return restore_dir is None
         else:
             return False
 
@@ -55,9 +55,9 @@ if __name__ == '__main__':
             else:
                 restore_dir = temporary_dir
 
-            context.set_temp_dir(restore_dir, delete=delete_temporary_dir(dtd, False))
+            context.set_temp_dir(restore_dir, delete=delete_temporary_dir(dtd, restore_dir))
         else:
-            context.set_temp_dir(temporary_dir, delete=delete_temporary_dir(dtd, True))
+            context.set_temp_dir(temporary_dir, delete=delete_temporary_dir(dtd, temporary_dir))
 
         targets = context.get_targets(target_name)
         destinations = context.get_destinations(destination_id)
