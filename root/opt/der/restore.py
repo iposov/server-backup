@@ -50,10 +50,11 @@ if __name__ == '__main__':
                 if restore_dir.endswith('.tgz'):
                     restore_dir = restore_dir[:-4]
                 restore_dir += '.restore'
-                if not os.path.isdir(restore_dir):
-                    os.mkdir(restore_dir)
             else:
                 restore_dir = temporary_dir
+
+            if not os.path.isdir(restore_dir):
+                os.mkdir(restore_dir)
 
             context.set_temp_dir(restore_dir, delete=delete_temporary_dir(dtd, restore_dir))
         else:

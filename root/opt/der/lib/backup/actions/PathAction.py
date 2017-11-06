@@ -6,24 +6,15 @@ import fnmatch
 import os
 
 
-def _matches(path, glob):
-    # TODO we must be sure that this works exactly as glob.glob() does
-    path_s = path.split('/')
-    glob_s = glob.split('/')
-    if len(path_s) != len(glob_s):
-        return False
-    for i in xrange(0, len(path_s)):
-        if not fnmatch.fnmatch(path_s[i], glob_s[i]):
-            return False
-    return True
-
-
 class PathAction(Action):
     NAME = 'paths'
 
     def __init__(self, target, action_description):
         Action.__init__(self, target, action_description)
         self.folder_glob = self.action_description[PathAction.NAME]
+
+    def _path_infix(self):
+        return self.folder_glob.replace('/', '--').replace('*', '_S_').replace('?', '_Q_')
 
     def run(self):
         paths_from_glob = glob.glob(self.folder_glob)
@@ -33,19 +24,19 @@ class PathAction(Action):
 
         tar = []
         for path in paths_from_glob:
-            tar.append(TarElement(self.target.context, os.path.abspath(path), temporary=False))
+            tar.append(TarElement(self.target.context, os.path.abspath(path), temporary=False, path_infix=self._path_infix()))
 
         return tar
 
     def pre_restore(self, tar):
-        glob = self.folder_glob
-        if glob.startswith('/'):
-            glob = glob[1:]
-
         tar_elements = []
+        tar_prefix = self._path_infix()
+
         for path in tar.iterate_tar_paths():
-            if _matches(path, glob):
-                tar_elements.append(TarElement(self.target.context, path, temporary=False))
+            split_path = path.split('/')
+            if split_path[0] == tar_prefix:
+                split_path.pop(0)
+                tar_elements.append(TarElement(self.target.context, '/'.join(split_path), temporary=False, path_infix=tar_prefix))
 
         return tar_elements
 

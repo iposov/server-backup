@@ -28,7 +28,7 @@ def _path_prefix(context, temporary):
 class TarElement:
 
     # path and tar_name must be always local
-    def __init__(self, context, path, temporary=True):
+    def __init__(self, context, path, temporary=True, path_infix=None):
         path = _ensure_not_absolute(path)
 
         self.path_prefix = _path_prefix(context, temporary)
@@ -36,6 +36,9 @@ class TarElement:
         # TODO make this properties
         self.path = os.path.join(self.path_prefix, path)
         self.tar_path = path
+        self.path_infix = path_infix
+        if path_infix is not None:
+            self.tar_path = os.path.join(path_infix, self.tar_path)
 
     def ensure_path_exists(self):
         if not os.path.exists(self.path):

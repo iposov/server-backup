@@ -5,8 +5,8 @@ class Action:
 
     @staticmethod
     def create(target, action_description):
-        import PathAction, MongoAction, MysqlAction
-        actions = [PathAction.PathAction, MongoAction.MongoAction, MysqlAction.MysqlAction]
+        import PathFlatAction, PathAction, MongoAction, MysqlAction
+        actions = [PathFlatAction.PathFlatAction, PathAction.PathAction, MongoAction.MongoAction, MysqlAction.MysqlAction]
         for a in actions:
             if a.NAME in action_description:
                 return a(target, action_description)

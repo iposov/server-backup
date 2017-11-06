@@ -53,11 +53,11 @@ class MongoAction(Action):
 
         mongo_command += [os.path.join(self.tar_element.path, db_name)]
 
-        self.context.log("backup: Starting mongo restore for db {} on host {}".format(db_name, host))
+        self.context.log("restore: Starting mongo restore for db {} on host {}".format(db_name, host))
         return_code = call(mongo_command, logger=self.context.log)
 
         if return_code != 0:
-            self.context.log_error("backup: failed to create mongo dump, exit code {}".format(return_code))
+            self.context.log_error("restore: failed to restore mongo, exit code {}".format(return_code))
         else:
-            self.context.log('backup: mongo dump successful')
+            self.context.log('restore: mongo restore successful')
 

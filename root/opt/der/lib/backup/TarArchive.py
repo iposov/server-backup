@@ -53,8 +53,11 @@ class TarArchive:
             if name == extract_path_prefix or name.startswith(extract_path_prefix_as_folder):
                 local_path = tar_element.path
                 try:
+                    if tar_element.path_infix is not None:
+                        file_.path = file_.path[len(tar_element.path_infix):]
                     self.tar_file.extract(file_, path=extract_path_prefix_for_tar_module)
                 except IOError as e:  # try again if error occurs, but prevously remove a file that may have existed there
+                    pass
                     os.remove(local_path)
                     self.tar_file.extract(file_, path=extract_path_prefix_for_tar_module)
                 finally:
