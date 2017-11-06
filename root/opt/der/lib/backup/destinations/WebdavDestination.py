@@ -117,7 +117,6 @@ class WebdavDestination(Destination):
         # TODO test
         local_path = os.path.join(local_dir, file_name)
         remote_url = urlparse.urljoin(self.full_url, file_name)
-        file_size = os.path.getsize(local_path)
 
         self.context.log("Downloading file {}".format(file_name))
 
