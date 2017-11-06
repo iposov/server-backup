@@ -116,6 +116,10 @@ class WebdavDestination(Destination):
     def download(self, file_name, local_dir):
         # TODO test
         local_path = os.path.join(local_dir, file_name)
+
+        if os.path.isfile(local_path):  # TODO test also filesize to be sure that file is the same as the remote file
+            return local_path
+
         remote_url = urlparse.urljoin(self.full_url, file_name)
 
         self.context.log("Downloading file {}".format(file_name))

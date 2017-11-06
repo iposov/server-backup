@@ -31,7 +31,8 @@ class TarArchive:
             mode = "r:gz"
 
         print "opening", path
-        self.tar_file = tarfile.open(path, mode=mode, errorlevel=1)
+        #https://stackoverflow.com/a/39321142
+        self.tar_file = tarfile.open(path, mode=mode, errorlevel=1, dereference=True)
 
     def __enter__(self):
         self.tar_file.__enter__()
