@@ -1,3 +1,5 @@
+import os
+
 from Action import Action
 from TarElement import TarElement
 from lib.subprocess_helper import call
@@ -49,7 +51,7 @@ class MongoAction(Action):
         if self.context.dry_run:
             mongo_command += ["--dryRun"]
 
-        mongo_command += [self.tar_element.path]
+        mongo_command += [os.path.join(self.tar_element.path, db_name)]
 
         self.context.log("backup: Starting mongo restore for db {} on host {}".format(db_name, host))
         return_code = call(mongo_command, logger=self.context.log)
