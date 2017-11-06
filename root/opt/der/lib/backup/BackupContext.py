@@ -46,8 +46,11 @@ class BackupContext:
 
         self.dry_run = False
 
-    def get_parser_argument(self, arg):
-        return getattr(self.args, arg)
+    def get_parser_argument(self, arg, default=None):
+        if default is None:
+            return getattr(self.args, arg)
+        else:
+            return getattr(self.args, arg, default)
 
     def get_targets(self, specified_target_name):
 
