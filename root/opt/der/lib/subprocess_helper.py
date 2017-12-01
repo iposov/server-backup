@@ -31,9 +31,10 @@ def call(args_list, logger=None):
 
     # TODO use Popen constructor and communicate to get stderr/stdout
     command_line = " ".join(command_line_args)
+    command_line_to_print = " ".join(command_line_args_to_print)
 
     if logger is not None:
-        logger('issuing command: ' + command_line)
+        logger('issuing command: ' + command_line_to_print)
 
     return subprocess.call(command_line, shell=True)
 
