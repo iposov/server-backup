@@ -31,8 +31,9 @@ class TarArchive:
             mode = "r:gz"
 
         print "opening", path
-        #https://stackoverflow.com/a/39321142
-        self.tar_file = tarfile.open(path, mode=mode, errorlevel=1, dereference=True)
+        #dereference: https://stackoverflow.com/a/39321142
+        #set dereference to false because the size of backup may become very large
+        self.tar_file = tarfile.open(path, mode=mode, errorlevel=1, dereference=False)
 
     def __enter__(self):
         self.tar_file.__enter__()

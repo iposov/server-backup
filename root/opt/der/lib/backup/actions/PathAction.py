@@ -24,7 +24,8 @@ class PathAction(Action):
 
         tar = []
         for path in paths_from_glob:
-            tar.append(TarElement(self.target.context, os.path.abspath(path), temporary=False, path_infix=self._path_infix()))
+            # TODO realpath eliminates information about the name of the soft link
+            tar.append(TarElement(self.target.context, os.path.realpath(os.path.abspath(path)), temporary=False, path_infix=self._path_infix()))
 
         return tar
 
